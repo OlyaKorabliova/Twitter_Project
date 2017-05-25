@@ -1,7 +1,5 @@
 import nltk
-# from nltk.corpus import movie_reviews, stopwords
 import random
-# import string
 from nltk.tokenize import TweetTokenizer
 import re
 from stop_words import get_stop_words
