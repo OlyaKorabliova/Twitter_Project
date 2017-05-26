@@ -1,5 +1,7 @@
 import nltk
+# from nltk.corpus import movie_reviews, stopwords
 import random
+# import string
 from nltk.tokenize import TweetTokenizer
 import re
 from stop_words import get_stop_words
@@ -21,17 +23,15 @@ def read_json(filename):
     global all_stopwords
     f = open(filename, 'r', encoding="utf-8")
     lines = f.read()
-    lines_lst = lines.split('""')
-    urls = []
+    lines_lst = lines.split('"]["')
     changes = []
     tokenizer = nltk.RegexpTokenizer(r'\w+')
     for i in lines_lst:
         i = " ".join(i.split("\\n"))
         x = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', i)
-        if len(x) > 0:
-            i = i.replace(x[0], "")
-            i = ''.join([k for k in i if not k.isdigit()])
-        urls.extend(x)
+        for r in x:
+            i = i.replace(r, "")
+        i = ''.join([k for k in i if not k.isdigit()])
         i = preprocess(i)
         tokens = tokenizer.tokenize(i)
         filtered_words = [w for w in tokens if w not in all_stopwords]
@@ -49,12 +49,12 @@ for i in poroshenko:
     common.extend(i.split())
 
 categories = {"poroshenko": poroshenko, "schur": schur}
+
 documents = [(j.split(), i) for i in categories.keys() for j in categories[i]]
 for i in categories.keys():
     for j in categories[i]:
         t = (j.split(), i)
         documents.append(t)
-
 random.shuffle(documents)
 
 all_words = nltk.FreqDist(w.lower() for w in common)
@@ -78,8 +78,8 @@ print(nltk.classify.accuracy(classifier, test_set))
 classifier.show_most_informative_features(5)
 
 test_sentence = "Слава Україні!"
-test2 = "Україна повертається до європейської родини"
+test_sentence2 = "Україна повертається до європейської родини"
 test_sent_features = {word.lower(): (word in nltk.word_tokenize(test_sentence.lower())) for word in all_words}
-test2_n = {word.lower(): (word in nltk.word_tokenize(test2.lower())) for word in all_words}
+test_sent_features2 = {word.lower(): (word in nltk.word_tokenize(test_sentence2.lower())) for word in all_words}
 print(classifier.classify(test_sent_features))
-print(classifier.classify(test2_n))
+print(classifier.classify(test_sent_features2))
