@@ -84,7 +84,7 @@ for i in categories.keys():
         documents.append(t)
 random.shuffle(documents)
 all_words = nltk.FreqDist(w for w in common_lst)
-word_features = all_words.most_common(2000)
+word_features = all_words.most_common(10000)
 
 def document_features(document):
     document_words = set(document)
