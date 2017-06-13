@@ -1,0 +1,12 @@
+Avakov = dataAvakovEXT.json
+Schur = dataMichaelSchur.json
+Tkach = dataMychailoTkachEXT.json
+Liashko = dataOVLiashkoEXT.json
+Poroshenko = dataPetroPoroshenko.json
+Saakashvili = dataSaakashviliEXT.json
+Sadovyi = dataSadovyiEXT.json
+Sheremeta = dataSheremetaEXT.json
+Shevchenko = dataShevchenkoEXT.json
+Skrypin = dataSkrypinEXT.json
+Suprun = dataSuprunEXT.json
+Vakarchuk = dataVakarchukEXT.json
