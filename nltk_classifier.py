@@ -24,6 +24,7 @@ def read_json(filename):
     f = open(filename, 'r', encoding="utf-8")
     lines = f.read()
     lines_lst = lines.split('"]["')
+    f.close()
     changes = []
     tokenizer = nltk.RegexpTokenizer(r'\w+')
     for i in lines_lst:
@@ -37,6 +38,7 @@ def read_json(filename):
         filtered_words = [w for w in tokens if w not in all_stopwords]
         changes.append(" ".join(filtered_words))
         if "" in changes: changes.remove('')
+
     return changes
 ########################################################################################
 
