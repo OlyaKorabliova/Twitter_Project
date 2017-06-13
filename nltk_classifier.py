@@ -10,6 +10,7 @@ all_stopwords.extend(get_stop_words("ukrainian"))
 all_stopwords.extend(get_stop_words("english"))
 all_stopwords.extend(get_stop_words("russian"))
 
+################################## READING JSONs #######################################
 def preprocess(sentence):
     global all_stopwords
     sentence = sentence.lower()
@@ -25,7 +26,7 @@ def read_json(filename):
     lines_lst = lines.split('"]["')
     changes = []
     tokenizer = nltk.RegexpTokenizer(r'\w+')
-    for i in lines_lst:
+    for i in lines_lst[:6]:
         i = " ".join(i.split("\\n"))
         x = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', i)
         for r in x:
@@ -37,25 +38,25 @@ def read_json(filename):
         changes.append(" ".join(filtered_words))
         if "" in changes: changes.remove('')
     return changes
+########################################################################################
 
-schur = read_json("dataMichaelSchur.json")
-poroshenko = read_json("dataPetroPoroshenko.json")
-avakov = read_json("dataAvakovEXT.json")
-tkach = read_json("dataMychailoTkachEXT.json")
-liashko = read_json("dataOVLiashkoEXT.json")
-saakashvili = read_json("dataSaakashviliEXT.json")
-sadovyi = read_json("dataSadovyiEXT.json")
-sheremeta = read_json("dataSheremetaEXT.json")
-shevchenko = read_json("dataShevchenkoEXT.json")
-skrypin = read_json("dataSkrypinEXT.json")
-suprun = read_json("dataSuprunEXT.json")
-vakarchuk = read_json("dataVakarchukEXT.json")
 
-categories = {"Schur": schur, "Avakov": avakov, "Poroshenko": poroshenko, "Tkach": tkach, "Liashko": liashko,
-              "Saakashvili": saakashvili, "Sadovyi": sadovyi, "Sheremeta": sheremeta, "Shevchenko": shevchenko,
-              "Skrypin": skrypin, "Suprun": suprun, "Vakarchuk": vakarchuk}
+################## CREATE DICTIONARY OF DATA FROM JSONs ###############################
+def create_dict(filename="list_of_JSONs.txt"):
+    categories = dict()
+    f = open(filename, 'r')
+    for i in f.readlines():
+        if " = " in i:
+            tup = i.strip().split(" = ")
+            categories[tup[0]] = read_json(tup[1])
+    f.close()
+    return categories
 
-########################## STEMMING ####################################################
+categories = create_dict()
+########################################################################################
+
+
+#################################### STEMMING ##########################################
 stemmer = UkrainianStemmer()
 
 def stemming():
@@ -83,8 +84,9 @@ for i in categories.keys():
         t = (j.split(), i)
         documents.append(t)
 random.shuffle(documents)
+
 all_words = nltk.FreqDist(w for w in common_lst)
-word_features = all_words.most_common(10000)
+word_features = all_words.most_common(5000)
 
 def document_features(document):
     document_words = set(document)
@@ -95,10 +97,8 @@ def document_features(document):
 
 featuresets = [(document_features(d), c) for (d, c) in documents]
 n = len(featuresets)
-
 train_set, test_set = featuresets[:n // 2], featuresets[n // 2:]
 classifier = nltk.NaiveBayesClassifier.train(train_set)
-
 print(nltk.classify.accuracy(classifier, test_set))
 classifier.show_most_informative_features(5)
 
