@@ -26,7 +26,7 @@ def read_json(filename):
     lines_lst = lines.split('"]["')
     changes = []
     tokenizer = nltk.RegexpTokenizer(r'\w+')
-    for i in lines_lst[:6]:
+    for i in lines_lst:
         i = " ".join(i.split("\\n"))
         x = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', i)
         for r in x:
