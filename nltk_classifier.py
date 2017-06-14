@@ -3,12 +3,14 @@ import random
 from ukrainian_stemmer import *
 from nltk.tokenize import TweetTokenizer
 import re
+import pickle, json
 from stop_words import get_stop_words
 
 all_stopwords = []
 all_stopwords.extend(get_stop_words("ukrainian"))
 all_stopwords.extend(get_stop_words("english"))
 all_stopwords.extend(get_stop_words("russian"))
+
 
 ################################## READING JSONs #######################################
 def preprocess(sentence):
@@ -19,12 +21,12 @@ def preprocess(sentence):
     filtered_words = [w for w in tokens if not w in all_stopwords]
     return " ".join(filtered_words)
 
+
 def read_json(filename):
     global all_stopwords
-    f = open(filename, 'r', encoding="utf-8")
-    lines = f.read()
-    lines_lst = lines.split('"]["')
-    f.close()
+    with open(filename, 'r', encoding='utf-8') as f:
+        lines = f.read()
+        lines_lst = lines.split('"]["')
     changes = []
     tokenizer = nltk.RegexpTokenizer(r'\w+')
     for i in lines_lst:
@@ -45,12 +47,11 @@ def read_json(filename):
 ################## CREATE DICTIONARY OF DATA FROM JSONs ###############################
 def create_dict(filename="list_of_JSONs.txt"):
     categories = dict()
-    f = open(filename, 'r')
-    for i in f.readlines():
-        if " = " in i:
-            tup = i.strip().split(" = ")
-            categories[tup[0]] = read_json(tup[1])
-    f.close()
+    with open(filename, 'r') as f:
+        for i in f.readlines():
+            if " = " in i:
+                tup = i.strip().split(" = ")
+                categories[tup[0]] = read_json("JSONs/" + tup[1])
     return categories
 
 categories = create_dict()
@@ -58,15 +59,16 @@ categories = create_dict()
 
 
 #################################### STEMMING ##########################################
+print("1")
 stemmer = UkrainianStemmer()
 
 def stemming():
     class_words = {}
-    
+
     classes = list(set([a for a in categories.keys()]))
     for c in classes:
         class_words[c] = []
-    
+
     for data in categories.keys():
         for i in categories[data]:
             for word in nltk.word_tokenize(i):
@@ -78,34 +80,36 @@ def stemming():
     return common
 ########################################################################################
 
-common_lst = stemming()
-documents = [(j.split(), i) for i in categories.keys() for j in categories[i]]
-for i in categories.keys():
-    for j in categories[i]:
-        t = (j.split(), i)
-        documents.append(t)
-random.shuffle(documents)
-
-all_words = nltk.FreqDist(w for w in common_lst)
-word_features = all_words.most_common(5000)
-
 def document_features(document):
     document_words = set(document)
     features = {}
     for word in word_features:
-        features['contains({})'.format(word[0])] = (word[0] in document_words)
+        features['{}'.format(word[0])] = (word[0] in document_words)
     return features
+
+common_lst = stemming()
+print("22")
+documents = [(j.split(), i) for i in categories.keys() for j in categories[i]]
+random.shuffle(documents)
+print("333")
+
+all_words = nltk.FreqDist(w for w in common_lst)
+word_features = all_words.most_common(5000)
 
 featuresets = [(document_features(d), c) for (d, c) in documents]
 n = len(featuresets)
+print("4444")
 train_set, test_set = featuresets[:n // 2], featuresets[n // 2:]
+print("55555")
 classifier = nltk.NaiveBayesClassifier.train(train_set)
-print(nltk.classify.accuracy(classifier, test_set))
-classifier.show_most_informative_features(5)
+print("666666")
+dump_pickle = open("my_classifier.pickle", "wb")
+pickle.dump(classifier, dump_pickle)
+dump_pickle.close()
+print("7777777")
 
-test_sentence = "Затримано 24 фігуранта, веземо до Києва"
-test_sentence2 = "Україна повертається до європейської родини"
-test_sent_features = {word.lower(): (word in nltk.word_tokenize(test_sentence.lower())) for word in all_words}
-test_sent_features2 = {word.lower(): (word in nltk.word_tokenize(test_sentence2.lower())) for word in all_words}
-print(classifier.classify(test_sent_features))
-print(classifier.classify(test_sent_features2))
+
+with open("test_set.json", 'w') as file_test:
+    json.dump(test_set, file_test)
+with open("all_words.json", 'w') as file_all_words:
+    json.dump(all_words, file_all_words)
