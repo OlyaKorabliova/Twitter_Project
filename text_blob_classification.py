@@ -59,7 +59,7 @@ def create_dict(filename="list_of_JSONs.txt"):
                 categories[tup[0]] = read_json("JSONs/" + tup[1])
     return categories
 
-categories = create_dict("t.txt")
+categories = create_dict()
 ########################################################################################
 
 
